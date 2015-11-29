@@ -1,0 +1,31 @@
+{
+  "name": "presentation-poll",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app-server.js",
+  "dependencies": {
+    "babel-loader": "^6.2.0",
+    "babel-preset-react": "^6.1.18",
+    "bootstrap": "^3.3.6",
+    "express": "^4.13.3",
+    "react": "^0.14.3",
+    "webpack": "^1.12.9",
+    "babel-core": "^6.2.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "prestart": "webpack",
+    "start":"node app-server.js "
+
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/miloskovacevic/PresentationPoll.git"
+  },
+  "author": "Milos Kovacevic",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/miloskovacevic/PresentationPoll/issues"
+  },
+  "homepage": "https://github.com/miloskovacevic/PresentationPoll#readme"
+}
