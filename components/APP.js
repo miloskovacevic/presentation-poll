@@ -1,14 +1,42 @@
-/**
- * Created by Milos on 11/29/2015.
- */
 
 var React = require('react');
+var Header = require('./parts/Header');
+var io = require('socket.io-client');
 
 var APP = React.createClass({
-    render() {
-        return (
-            <h1>Zdravo svete! REACT modul </h1>
+    getInitialState(){
+        return {
+            status: 'disconnected'
+        }
+    },
 
+    componentWillMount() {
+        this.socket = io('http://localhost:3000');
+        this.socket.on('connect', this.connect);
+        this.socket.on('disconnect', this.disconnect);
+    },
+
+    connect(){
+        //alert("Connected :" + this.socket.id );
+        console.log('Ovo ide u konzolu na browseru ... Connected: ' + this.socket.id);
+        this.setState({
+            status: 'connected'
+        });
+    },
+    disconnect(){
+        console.log('Disconnected');
+        this.setState({
+            status: 'disconnected'
+        });
+    },
+
+    render() {
+        var njak = 'New header';
+        return (
+            <div>
+                <Header title={njak} status={this.state.status}/>
+
+            </div>
         );
     }
 });
