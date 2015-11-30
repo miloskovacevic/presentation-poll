@@ -4,6 +4,7 @@ var app = express();
 
 // here we'll store our connections...
 var connections = [];
+var title = 'Untitled presentation';
 
 app.use(express.static('./public'));
 app.use(express.static('./node_modules/bootstrap/dist'));
@@ -16,6 +17,12 @@ var io = require('socket.io').listen(server);
 // event handler for when a socket connects
 io.sockets.on('connection', function (socket) {
 
+    // when user connects send him title variable content...
+    // sending him an object with prop title wich have title variable as content...
+    socket.emit('welcome', {
+        title : title
+    });
+
     // push to connections array...
     connections.push(socket);
     console.log('Connected: %s sockets connected', connections.length);
@@ -26,8 +33,6 @@ io.sockets.on('connection', function (socket) {
         socket.disconnect();
         console.log('Disconnected! %s sockets remaining', connections.length);
     });
-
-    
 
 });
 
