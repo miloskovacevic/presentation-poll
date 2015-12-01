@@ -7,6 +7,7 @@ var _ = require('underscore');
 var connections = [];
 var title = 'Untitled presentation';
 var audience = [];
+var speaker = {};
 
 app.use(express.static('./public'));
 app.use(express.static('./node_modules/bootstrap/dist'));
@@ -22,7 +23,8 @@ io.sockets.on('connection', function (socket) {
     socket.on('join', function (payload) {
         var newMember = {
             id: this.id,
-            name: payload.name
+            name: payload.name,
+            type: 'member'
         };
 
         audience.push(newMember);
@@ -32,6 +34,18 @@ io.sockets.on('connection', function (socket) {
         //now we emit message to ALL audience members that new member is in... BROADCASTING EVENT
         io.sockets.emit('audience', audience);
 
+    });
+
+    //speaker starts event, info about name title of presentation is in payload
+    socket.on('start', function (payload) {
+        speaker.name = payload.name;
+        speaker.id = this.id;
+        speaker.type = 'speaker';
+        speaker.title = payload.title;
+        title = speaker.title;
+
+        this.emit('joined', speaker);
+        console.log("Presentation Started: '%s' by %s", title, speaker.name);
     });
 
     // when user connects send him title variable content...

@@ -13,7 +13,8 @@ var APP = React.createClass({
             status: 'disconnected',
             title: '',
             member: {},
-            audience: []
+            audience: [],
+            speaker: {}
         }
     },
 
@@ -41,7 +42,11 @@ var APP = React.createClass({
         var member = (sessionStorage.member) ? JSON.parse(sessionStorage.member) : null;
 
         if(member){
-            this.emit('join', member);
+            if(member.type === 'member'){
+                this.emit('join', member);
+            }else if(member.type === 'speaker'){
+                this.emit('start', member);
+            }
         }
 
         this.setState({
