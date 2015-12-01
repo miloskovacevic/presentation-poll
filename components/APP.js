@@ -12,7 +12,8 @@ var APP = React.createClass({
         return {
             status: 'disconnected',
             title: '',
-            member: {}
+            member: {},
+            audience: []
         }
     },
 
@@ -22,9 +23,11 @@ var APP = React.createClass({
         this.socket.on('disconnect', this.disconnect);
         this.socket.on('welcome', this.welcome);
         this.socket.on('joined', this.joined);
+        this.socket.on('audience', this.updateAudience);
     },
 
     joined(member){
+        sessionStorage.member = JSON.stringify(member);
         this.setState({
             member: member
         });
@@ -35,8 +38,12 @@ var APP = React.createClass({
     },
 
     connect(){
-        //alert("Connected :" + this.socket.id );
-        console.log('Ovo ide u konzolu na browseru ... Connected: ' + this.socket.id);
+        var member = (sessionStorage.member) ? JSON.parse(sessionStorage.member) : null;
+
+        if(member){
+            this.emit('join', member);
+        }
+
         this.setState({
             status: 'connected'
         });
@@ -51,6 +58,12 @@ var APP = React.createClass({
     welcome(serverState){
         this.setState({
             title: serverState.title
+        });
+    },
+
+    updateAudience(audienceArray){
+        this.setState({
+            audience: audienceArray
         });
     },
 
