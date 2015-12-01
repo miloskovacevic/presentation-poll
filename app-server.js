@@ -13,9 +13,21 @@ var server = app.listen(3000);
 var io = require('socket.io').listen(server);
 
 
-
 // event handler for when a socket connects
 io.sockets.on('connection', function (socket) {
+
+    //listening to join event from client side when someone joins presentation...
+    socket.on('join', function (payload) {
+        var newMember = {
+            id: this.id,
+            name: payload.name
+        };
+
+        console.log('Audience joined %s', payload.name);
+
+        //now we need to emit message to the client that we recieved payload with name of audience member...
+        this.emit('joined', newMember);
+    });
 
     // when user connects send him title variable content...
     // sending him an object with prop title wich have title variable as content...

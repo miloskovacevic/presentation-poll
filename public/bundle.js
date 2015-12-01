@@ -49,11 +49,13 @@
 	var Router = __webpack_require__(158);
 	var Route = Router.Route;
 	var DefaultRoute = Router.DefaultRoute;
+	var NotFoundRoute = Router.NotFoundRoute;
 
 	var APP = __webpack_require__(200);
 	var Audience = __webpack_require__(252);
-	var Board = __webpack_require__(253);
-	var Speaker = __webpack_require__(254);
+	var Board = __webpack_require__(255);
+	var Speaker = __webpack_require__(256);
+	var Whoops404 = __webpack_require__(257);
 
 	//main component that will include and render all other componennts is APP!
 	var routes = React.createElement(
@@ -61,7 +63,8 @@
 	    { handler: APP },
 	    React.createElement(DefaultRoute, { handler: Audience }),
 	    React.createElement(Route, { name: 'speaker', path: 'speaker', handler: Speaker }),
-	    React.createElement(Route, { name: 'board', path: 'board', handler: Board })
+	    React.createElement(Route, { name: 'board', path: 'board', handler: Board }),
+	    React.createElement(NotFoundRoute, { handler: Whoops404 })
 	);
 
 	//now that we have routes configured, lets render components...
@@ -23113,7 +23116,8 @@
 /* 200 */
 /***/ function(module, exports, __webpack_require__) {
 
-	
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 	var React = __webpack_require__(1);
 	var Router = __webpack_require__(158);
 	var RouteHandler = Router.RouteHandler;
@@ -23127,7 +23131,8 @@
 	    getInitialState() {
 	        return {
 	            status: 'disconnected',
-	            title: ''
+	            title: '',
+	            member: {}
 	        };
 	    },
 
@@ -23136,6 +23141,17 @@
 	        this.socket.on('connect', this.connect);
 	        this.socket.on('disconnect', this.disconnect);
 	        this.socket.on('welcome', this.welcome);
+	        this.socket.on('joined', this.joined);
+	    },
+
+	    joined(member) {
+	        this.setState({
+	            member: member
+	        });
+	    },
+
+	    emit(eventName, payload) {
+	        this.socket.emit(eventName, payload);
 	    },
 
 	    connect() {
@@ -23163,7 +23179,7 @@
 	            'div',
 	            null,
 	            React.createElement(Header, { title: this.state.title, status: this.state.status }),
-	            React.createElement(RouteHandler, null)
+	            React.createElement(RouteHandler, _extends({ emit: this.emit }, this.state))
 	        );
 	    }
 	});
@@ -30315,15 +30331,45 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
+	var Display = __webpack_require__(253);
+	var Join = __webpack_require__(254);
 
 	var Audience = React.createClass({
 	    displayName: 'Audience',
 
 	    render() {
 	        return React.createElement(
-	            'h1',
+	            'div',
 	            null,
-	            'Audience'
+	            React.createElement(
+	                Display,
+	                { 'if': this.props.status === 'connected' },
+	                React.createElement(
+	                    Display,
+	                    { 'if': this.props.member.name },
+	                    React.createElement(
+	                        'h3',
+	                        null,
+	                        'Welcome, ',
+	                        this.props.member.name
+	                    ),
+	                    React.createElement(
+	                        'p',
+	                        null,
+	                        'Questions will appear here.'
+	                    )
+	                ),
+	                React.createElement(
+	                    Display,
+	                    { 'if': !this.props.member.name },
+	                    React.createElement(
+	                        'h3',
+	                        null,
+	                        'Join the session: '
+	                    ),
+	                    React.createElement(Join, { emit: this.props.emit })
+	                )
+	            )
 	        );
 	    }
 	});
@@ -30336,6 +30382,67 @@
 
 	var React = __webpack_require__(1);
 
+	var Display = React.createClass({
+	    displayName: 'Display',
+
+	    render() {
+	        return this.props.if ? React.createElement(
+	            'div',
+	            null,
+	            this.props.children
+	        ) : null;
+	    }
+	});
+
+	module.exports = Display;
+
+/***/ },
+/* 254 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+
+	var Join = React.createClass({
+	    displayName: 'Join',
+
+	    join() {
+	        var memberName = this.refs.name.value;
+	        this.props.emit('join', {
+	            name: memberName
+	        });
+	        this.refs.name.value = '';
+	    },
+
+	    render() {
+	        return React.createElement(
+	            'form',
+	            { action: 'javascript:void(0)', onSubmit: this.join },
+	            React.createElement(
+	                'label',
+	                null,
+	                'Full Name'
+	            ),
+	            React.createElement('input', { ref: 'name', className: 'form-control',
+	                placeholder: 'enter your full name...',
+	                required: true
+	            }),
+	            React.createElement(
+	                'button',
+	                { className: 'btn btn-primary' },
+	                'Join'
+	            )
+	        );
+	    }
+	});
+
+	module.exports = Join;
+
+/***/ },
+/* 255 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+
 	var Board = React.createClass({
 	    displayName: 'Board',
 
@@ -30343,7 +30450,7 @@
 	        return React.createElement(
 	            'h1',
 	            null,
-	            'Board'
+	            'Board :'
 	        );
 	    }
 	});
@@ -30351,7 +30458,7 @@
 	module.exports = Board;
 
 /***/ },
-/* 254 */
+/* 256 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
@@ -30363,12 +30470,59 @@
 	        return React.createElement(
 	            'h1',
 	            null,
-	            'Speaker'
+	            'Speaker : ',
+	            this.props.status
 	        );
 	    }
 	});
 
 	module.exports = Speaker;
+
+/***/ },
+/* 257 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	var Router = __webpack_require__(158);
+	var Link = Router.Link;
+
+	var Whoops404 = React.createClass({
+	    displayName: 'Whoops404',
+
+	    render() {
+	        return React.createElement(
+	            'div',
+	            { id: 'not-found' },
+	            React.createElement(
+	                'h1',
+	                null,
+	                'Whoops...'
+	            ),
+	            React.createElement(
+	                'p',
+	                null,
+	                'We cannot find the page that you have requested Were you lookin one of these: '
+	            ),
+	            React.createElement(
+	                Link,
+	                { to: '/' },
+	                'Join as Audience'
+	            ),
+	            React.createElement(
+	                Link,
+	                { to: '/speaker' },
+	                'Join as Speaker. Start the presentation!'
+	            ),
+	            React.createElement(
+	                Link,
+	                { to: '/board' },
+	                'Board'
+	            )
+	        );
+	    }
+	});
+
+	module.exports = Whoops404;
 
 /***/ }
 /******/ ]);

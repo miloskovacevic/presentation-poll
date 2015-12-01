@@ -11,7 +11,8 @@ var APP = React.createClass({
     getInitialState(){
         return {
             status: 'disconnected',
-            title: ''
+            title: '',
+            member: {}
         }
     },
 
@@ -20,6 +21,17 @@ var APP = React.createClass({
         this.socket.on('connect', this.connect);
         this.socket.on('disconnect', this.disconnect);
         this.socket.on('welcome', this.welcome);
+        this.socket.on('joined', this.joined);
+    },
+
+    joined(member){
+        this.setState({
+            member: member
+        });
+    },
+
+    emit(eventName, payload){
+        this.socket.emit(eventName, payload);
     },
 
     connect(){
@@ -46,9 +58,7 @@ var APP = React.createClass({
         return (
             <div>
                 <Header title={this.state.title} status={this.state.status}/>
-                <RouteHandler
-                        title={this.state.title}
-                        status={this.state.status}
+                <RouteHandler emit={this.emit} {...this.state}
                     />
             </div>
         );
