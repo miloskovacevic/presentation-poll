@@ -14,7 +14,7 @@ var APP = React.createClass({
             title: '',
             member: {},
             audience: [],
-            speaker: {}
+            speaker: ''
         }
     },
 
@@ -22,9 +22,11 @@ var APP = React.createClass({
         this.socket = io('http://localhost:3000');
         this.socket.on('connect', this.connect);
         this.socket.on('disconnect', this.disconnect);
-        this.socket.on('welcome', this.welcome);
+        this.socket.on('welcome', this.updateState);
         this.socket.on('joined', this.joined);
         this.socket.on('audience', this.updateAudience);
+        this.socket.on('start', this.start);
+        this.socket.on('end', this.updateState);
     },
 
     joined(member){
@@ -41,12 +43,21 @@ var APP = React.createClass({
     connect(){
         var member = (sessionStorage.member) ? JSON.parse(sessionStorage.member) : null;
 
-        if(member){
-            if(member.type === 'member'){
-                this.emit('join', member);
-            }else if(member.type === 'speaker'){
-                this.emit('start', member);
-            }
+        //if(member){
+        //    if(member.type === 'member'){
+        //        this.emit('join', member);
+        //    }else if(member.type === 'speaker'){
+        //        this.emit('start', member);
+        //    }
+        //}
+
+        if(member && member.type === 'audience'){
+            this.emit('join',member);
+        } else if (member && member.type === 'speaker'){
+            this.emit('start', {
+                name: member.name,
+                title: sessionStorage.title
+            });
         }
 
         this.setState({
@@ -56,14 +67,15 @@ var APP = React.createClass({
     disconnect(){
         console.log('Disconnected');
         this.setState({
-            status: 'disconnected'
+            status: 'disconnected',
+            title: 'disconnected',
+            speaker: ''
         });
     },
 
-    welcome(serverState){
-        this.setState({
-            title: serverState.title
-        });
+    updateState(serverState){
+        // all our variables in state are covered...(title, audience, speaker now got values from server)
+        this.setState(serverState);
     },
 
     updateAudience(audienceArray){
@@ -72,10 +84,17 @@ var APP = React.createClass({
         });
     },
 
+    start(presentation){
+        if(this.state.member.type === 'speaker'){
+            sessionStorage.title = presentation.title;
+        }
+        this.setState(presentation);
+    },
+
     render() {
         return (
             <div>
-                <Header title={this.state.title} status={this.state.status}/>
+                <Header {...this.state} />
                 <RouteHandler emit={this.emit} {...this.state}
                     />
             </div>
