@@ -8,6 +8,8 @@ var connections = [];
 var title = 'Default presentation title';
 var audience = [];
 var speaker = {};
+var questions = require('./app-questions');
+var currentQuestion = false;
 
 app.use(express.static('./public'));
 app.use(express.static('./node_modules/bootstrap/dist'));
@@ -49,13 +51,21 @@ io.sockets.on('connection', function (socket) {
         });
         console.log("Presentation Started: '%s' by %s", title, speaker.name);
     });
-
+    
+    socket.on('ask', function (question) {
+        currentQuestion = question;
+        io.sockets.emit('ask', currentQuestion);
+        console.log('Question asked "%s" ', question.q);
+    });
+    
     // when new user connects send him title, audience, speaker variable content...
     // sending him an object with prop title,speaker,audience wich have title, speaker, audience variable as content...
     socket.emit('welcome', {
         title : title,
         audience: audience,
-        speaker: speaker.name
+        speaker: speaker.name,
+        questions: questions,
+        currentQuestion: currentQuestion
     });
 
     // push to connections array...
