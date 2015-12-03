@@ -1,0 +1,12 @@
+[{
+    "babel": {
+            "enable": true,
+                "options": {
+                "stage": 2,
+                "query": {
+                    "compact": false
+                }
+            }
+        }
+    }
+]

@@ -23136,7 +23136,8 @@
 	            audience: [],
 	            speaker: '',
 	            questions: [],
-	            currentQuestion: false
+	            currentQuestion: false,
+	            results: {}
 	        };
 	    },
 
@@ -23150,6 +23151,7 @@
 	        this.socket.on('start', this.start);
 	        this.socket.on('end', this.updateState);
 	        this.socket.on('ask', this.ask);
+	        this.socket.on('results', this.updateResults);
 	    },
 
 	    joined(member) {
@@ -23217,7 +23219,14 @@
 	    ask(question) {
 	        sessionStorage.answer = '';
 	        this.setState({
-	            currentQuestion: question
+	            currentQuestion: question,
+	            results: { a: 0, b: 0, c: 0, d: 0 }
+	        });
+	    },
+
+	    updateResults(data) {
+	        this.setState({
+	            results: data
 	        });
 	    },
 
@@ -30500,6 +30509,11 @@
 	                Link,
 	                { to: '/speaker' },
 	                'Join as Speaker'
+	            ),
+	            React.createElement(
+	                Link,
+	                { to: '/board' },
+	                'Results Board'
 	            )
 	        );
 	    }
@@ -30613,15 +30627,47 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
+	var Display = __webpack_require__(253);
 
 	var Board = React.createClass({
 	    displayName: 'Board',
 
+	    barGraphData(results) {
+	        return Object.keys(results).map(function (choice) {
+	            return {
+	                label: choice,
+	                value: results[choice]
+	            };
+	        });
+	    },
+
 	    render() {
 	        return React.createElement(
-	            'h1',
-	            null,
-	            'Board :'
+	            'div',
+	            { id: 'scoreboard' },
+	            React.createElement(
+	                Display,
+	                { 'if': this.props.status === 'connected' && this.props.currentQuestion },
+	                React.createElement(
+	                    'h3',
+	                    null,
+	                    this.props.currentQuestion.q
+	                ),
+	                React.createElement(
+	                    'h6',
+	                    null,
+	                    JSON.stringify(this.props.results)
+	                )
+	            ),
+	            React.createElement(
+	                Display,
+	                { 'if': this.props.status === 'connected' && !this.props.currentQuestion },
+	                React.createElement(
+	                    'h3',
+	                    null,
+	                    'Awaiting a question...'
+	                )
+	            )
 	        );
 	    }
 	});
